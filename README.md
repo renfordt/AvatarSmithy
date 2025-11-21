@@ -83,15 +83,15 @@ $avatar = Avatar::engine('gravatar')
 
 ## Available Engines
 
-| Engine | Description | Network Required |
-|--------|-------------|------------------|
-| `initials` | SVG avatars with user initials in colored shapes | No |
-| `gravatar` | Fetches from Gravatar.com based on email hash | Yes |
-| `dicebear` | Fetches from DiceBear API (various styles) | Yes |
-| `pixel` | Generates retro pixel-art style avatars | No |
-| `multicolor-pixel` | Multi-colored variant of pixel engine | No |
-| `bauhaus` | Bauhaus-inspired geometric art avatars | No |
-| `gradient` | Beautiful gradient-based avatars | No |
+| Engine             | Description                                      | Network Required |
+|--------------------|--------------------------------------------------|------------------|
+| `initials`         | SVG avatars with user initials in colored shapes | No               |
+| `gravatar`         | Fetches from Gravatar.com based on email hash    | Yes              |
+| `dicebear`         | Fetches from DiceBear API (various styles)       | Yes              |
+| `pixel`            | Generates retro pixel-art style avatars          | No               |
+| `multicolor-pixel` | Multi-colored variant of pixel engine            | No               |
+| `bauhaus`          | Bauhaus-inspired geometric art avatars           | No               |
+| `gradient`         | Beautiful gradient-based avatars                 | No               |
 
 ## Output Formats
 
