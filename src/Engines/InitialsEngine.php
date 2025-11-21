@@ -12,6 +12,8 @@ use SVG\Nodes\Shapes\SVGRect;
 use SVG\Nodes\Texts\SVGText;
 use SVG\SVG;
 
+use function Renfordt\Clamp\clamp;
+
 class InitialsEngine extends AbstractEngine
 {
     /**
@@ -26,8 +28,8 @@ class InitialsEngine extends AbstractEngine
         }
 
         $shape = is_string($options['shape'] ?? null) ? $options['shape'] : 'circle';
-        $foregroundLightness = is_float($options['foregroundLightness'] ?? null) ? $options['foregroundLightness'] : 0.35;
-        $backgroundLightness = is_float($options['backgroundLightness'] ?? null) ? $options['backgroundLightness'] : 0.8;
+        $foregroundLightness = is_float($options['foregroundLightness'] ?? null) ? clamp($options['foregroundLightness'], 0, 1) : 0.35;
+        $backgroundLightness = is_float($options['backgroundLightness'] ?? null) ? clamp($options['backgroundLightness'], 0, 1) : 0.8;
         $fontSize = is_int($options['fontSize'] ?? null) ? $options['fontSize'] : $this->calculateFontSize($size, $nameObj->getInitials());
         $fontWeight = is_string($options['fontWeight'] ?? null) ? $options['fontWeight'] : 'normal';
         $fontFamily = is_string($options['fontFamily'] ?? null) ? $options['fontFamily'] : 'Segoe UI, Helvetica, sans-serif';

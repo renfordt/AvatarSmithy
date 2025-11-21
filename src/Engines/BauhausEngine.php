@@ -12,6 +12,8 @@ use SVG\Nodes\Shapes\SVGPolygon;
 use SVG\Nodes\Shapes\SVGRect;
 use SVG\SVG;
 
+use function Renfordt\Clamp\clamp;
+
 class BauhausEngine extends AbstractEngine
 {
     /**
@@ -66,8 +68,8 @@ class BauhausEngine extends AbstractEngine
             $hsl = clone $baseColor;
             $hueShift = $colorSchemes[$i][0];
             $hsl->setHue(($baseColor->getHue() + $hueShift) % 360);
-            $hsl->setSaturation($colorSchemes[$i][1]);
-            $hsl->setLightness($colorSchemes[$i][2]);
+            $hsl->setSaturation(clamp($colorSchemes[$i][1], 0, 1));
+            $hsl->setLightness(clamp($colorSchemes[$i][2], 0, 1));
             $colors[] = $hsl;
         }
 
@@ -75,8 +77,8 @@ class BauhausEngine extends AbstractEngine
         while (count($colors) < $numColors) {
             $hsl = clone $baseColor;
             $hsl->setHue(($baseColor->getHue() + (count($colors) * 45)) % 360);
-            $hsl->setSaturation(0.70 + (count($colors) % 3) * 0.05);
-            $hsl->setLightness(0.50 + (count($colors) % 4) * 0.08);
+            $hsl->setSaturation(clamp(0.70 + (count($colors) % 3) * 0.05, 0, 1));
+            $hsl->setLightness(clamp(0.50 + (count($colors) % 4) * 0.08, 0, 1));
             $colors[] = $hsl;
         }
 
@@ -100,7 +102,7 @@ class BauhausEngine extends AbstractEngine
             // Use hash to determine shape properties
             $shapeType = $this->getShapeType($hash, $i);
             $color = $colors[$i % count($colors)];
-            $opacity = 0.7 + ($i % 3) * 0.1;
+            $opacity = clamp(0.7 + ($i % 3) * 0.1, 0, 1);
 
             // Calculate grid position to ensure distribution
             $gridX = $i % $gridSize;
@@ -154,7 +156,7 @@ class BauhausEngine extends AbstractEngine
         $value1 = hexdec(substr($hash, $offset1, 4));
         $value2 = hexdec(substr($hash, $offset2, 4));
         $value = ($value1 ^ $value2) % 65536; // XOR and wrap to 16-bit range
-        $normalized = $value / 65535; // Normalize to 0-1
+        $normalized = clamp($value / 65535, 0, 1); // Normalize to 0-1
         return $min + ($normalized * ($max - $min));
     }
 
