@@ -9,7 +9,7 @@ use Renfordt\Colors\HSLColor;
 use SVG\Nodes\Shapes\SVGRect;
 use SVG\SVG;
 
-use function Renfordt\Clamp\clamp;
+use function clamp;
 
 class PixelEngine extends AbstractEngine
 {
@@ -22,7 +22,7 @@ class PixelEngine extends AbstractEngine
 
         $pixels = is_int($options['pixels'] ?? null) ? $options['pixels'] : 5;
         $symmetry = is_bool($options['symmetry'] ?? null) ? $options['symmetry'] : true;
-        $foregroundLightness = is_float($options['foregroundLightness'] ?? null) ? clamp($options['foregroundLightness'], 0, 1) : 0.5;
+        $foregroundLightness = is_float($options['foregroundLightness'] ?? null) ? (float) clamp($options['foregroundLightness'], 0, 1) : 0.5;
 
         $color = $this->getColor($nameObj, $foregroundLightness);
         $matrix = $symmetry ? $this->generateSymmetricMatrix($nameObj, $pixels) : $this->generateMatrix($nameObj, $pixels);
