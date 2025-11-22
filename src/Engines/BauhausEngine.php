@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace Renfordt\AvatarSmithy\Engines;
 
 use Renfordt\AvatarSmithy\Support\Name;
-use Renfordt\Colors\HSLColor;
 use SVG\Nodes\Shapes\SVGCircle;
 use SVG\Nodes\Shapes\SVGLine;
 use SVG\Nodes\Shapes\SVGPolygon;
 use SVG\Nodes\Shapes\SVGRect;
+use SVG\Nodes\Structures\SVGGroup;
 use SVG\SVG;
-
-use function clamp;
 
 class BauhausEngine extends AbstractEngine
 {
@@ -22,221 +20,235 @@ class BauhausEngine extends AbstractEngine
     public function generate(string $seed, ?string $name, int $size, array $options): ?string
     {
         $nameObj = Name::make($seed);
-        $numShapes = is_int($options['numShapes'] ?? null) ? $options['numShapes'] : 6;
-        $numColors = is_int($options['numColors'] ?? null) ? $options['numColors'] : 4;
+        $hash = $nameObj->getHash();
+        $numShapes = is_int($options['numShapes'] ?? null) ? $options['numShapes'] : 4;
 
-        $colors = $this->generateColorPalette($nameObj, $numColors);
-        $shapes = $this->generateShapes($nameObj, $size, $numShapes, $colors);
+        // Generate Bauhaus color palette (5 colors from predefined schemes)
+        $colors = $this->generateColorPalette($hash);
 
         $svg = new SVG($size, $size);
         $doc = $svg->getDocument();
 
-        // Add background
-        $background = new SVGRect(0, 0, $size, $size);
-        $bgColor = clone $colors[0];
-        $bgColor->setLightness(0.95);
-        $background->setStyle('fill', $bgColor->toHex());
-        $doc->addChild($background);
+        $group = new SVGGroup();
 
-        // Add shapes
-        foreach ($shapes as $shape) {
-            $doc->addChild($shape);
+        // 1. Background rectangle (always present)
+        $background = new SVGRect(0, 0, $size, $size);
+        $background->setStyle('fill', $colors[0]);
+        $group->addChild($background);
+
+        // 2. Large rotated rectangle with variable dimensions (always present)
+        $rectWidthMultiplier = $this->getValueFromHash($hash, 0) < 0.3 ?
+            $this->getValueFromHash($hash, 9, 0.6, 0.9) : 1.0;
+        $rectWidth = $size * $rectWidthMultiplier;
+
+        $rectHeightType = $this->getValueFromHash($hash, 1);
+        if ($rectHeightType < 0.4) {
+            // Thin bar
+            $rectHeight = $size * $this->getValueFromHash($hash, 10, 0.1, 0.15);
+        } elseif ($rectHeightType < 0.7) {
+            // Medium rectangle
+            $rectHeight = $size * $this->getValueFromHash($hash, 11, 0.3, 0.6);
+        } else {
+            // Full height
+            $rectHeight = $size;
         }
+
+        $rect = new SVGRect($size * 0.125, $size * 0.375, $rectWidth, $rectHeight);
+        $rect->setStyle('fill', $colors[1]);
+        $translateX = $this->getValueFromHash($hash, 2, -$size * 0.225, $size * 0.2);
+        $translateY = $this->getValueFromHash($hash, 3, -$size * 0.225, $size * 0.2);
+        $rotateAngle = $this->getValueFromHash($hash, 4, 0, 360);
+        $rect->setAttribute('transform', sprintf(
+            'translate(%.1f %.1f) rotate(%.0f %d %d)',
+            $translateX,
+            $translateY,
+            $rotateAngle,
+            $size / 2,
+            $size / 2
+        ));
+        $group->addChild($rect);
+
+        // 3. Circle with variable diameter (always present)
+        $circleRadius = $size * $this->getValueFromHash($hash, 13, 0.15, 0.25);
+        $circle = new SVGCircle($size / 2, $size / 2, $circleRadius);
+        $circle->setStyle('fill', $colors[2]);
+        $circleTranslateX = $this->getValueFromHash($hash, 5, -$size * 0.225, $size * 0.225);
+        $circleTranslateY = $this->getValueFromHash($hash, 6, -$size * 0.225, $size * 0.225);
+        $circle->setAttribute('transform', sprintf(
+            'translate(%.1f %.1f)',
+            $circleTranslateX,
+            $circleTranslateY
+        ));
+        $group->addChild($circle);
+
+        // 4. Line across the middle (always present)
+        $line = new SVGLine(0, $size / 2, $size, $size / 2);
+        $line->setStyle('stroke', $colors[3]);
+        $line->setStyle('stroke-width', (string) ($size * 0.025));
+        $lineTranslateX = $this->getValueFromHash($hash, 7, -$size * 0.2, $size * 0.2);
+        $lineTranslateY = $this->getValueFromHash($hash, 8, -$size * 0.2, $size * 0.2);
+        $lineRotateAngle = $this->getValueFromHash($hash, 12, 0, 360);
+        $line->setAttribute('transform', sprintf(
+            'translate(%.1f %.1f) rotate(%.0f %d %d)',
+            $lineTranslateX,
+            $lineTranslateY,
+            $lineRotateAngle,
+            $size / 2,
+            $size / 2
+        ));
+        $group->addChild($line);
+
+        // 5. Additional optional shapes (triangles, hexagons, extra circles/rectangles)
+        if ($numShapes > 4) {
+            $additionalShapes = $numShapes - 4;
+            for ($i = 0; $i < $additionalShapes; $i++) {
+                $shapeIndex = 14 + ($i * 6); // Each shape uses 6 hash indices
+                $shape = $this->createAdditionalShape($hash, $shapeIndex, $size, $colors, $i);
+                $group->addChild($shape);
+            }
+        }
+
+        $doc->addChild($group);
 
         return $svg->__toString();
     }
 
     /**
-     * @return array<HSLColor>
+     * @return array<string>
      */
-    protected function generateColorPalette(Name $name, int $numColors): array
+    protected function generateColorPalette(string $hash): array
     {
-        $baseColor = $name->getHexColor()->toHSL();
-        $colors = [];
-
-        // Generate harmonious Bauhaus-inspired colors with vibrant saturation
-        $colorSchemes = [
-            [0, 0.75, 0.55],    // Base color - vibrant
-            [180, 0.70, 0.50],  // Complementary
-            [60, 0.80, 0.60],   // Analogous 1 - bright
-            [300, 0.75, 0.55],  // Analogous 2
-            [120, 0.65, 0.45],  // Triadic
-            [240, 0.70, 0.58],  // Triadic 2
+        // Bauhaus-inspired color palettes (5 colors each)
+        $palettes = [
+            ['#ffe3b3', '#ff9a52', '#ff5252', '#c91e5a', '#3d2922'], // Warm oranges/reds
+            ['#c91e5a', '#3d2922', '#ffe3b3', '#ff9a52', '#ff5252'], // Dark with warm accents
+            ['#ff5252', '#c91e5a', '#3d2922', '#ffe3b3', '#ff9a52'], // Red-dominant
+            ['#ff9a52', '#ff5252', '#c91e5a', '#3d2922', '#ffe3b3'], // Orange-dominant
         ];
 
-        for ($i = 0; $i < min($numColors, count($colorSchemes)); $i++) {
-            $hsl = clone $baseColor;
-            $hueShift = $colorSchemes[$i][0];
-            $hsl->setHue(($baseColor->getHue() + $hueShift) % 360);
-            $hsl->setSaturation((float) clamp($colorSchemes[$i][1], 0, 1));
-            $hsl->setLightness((float) clamp($colorSchemes[$i][2], 0, 1));
-            $colors[] = $hsl;
-        }
-
-        // If more colors needed, generate additional vibrant ones
-        while (count($colors) < $numColors) {
-            $hsl = clone $baseColor;
-            $hsl->setHue(($baseColor->getHue() + (count($colors) * 45)) % 360);
-            $hsl->setSaturation((float) clamp(0.70 + (count($colors) % 3) * 0.05, 0, 1));
-            $hsl->setLightness((float) clamp(0.50 + (count($colors) % 4) * 0.08, 0, 1));
-            $colors[] = $hsl;
-        }
-
-        return $colors;
+        // Select palette based on hash
+        $paletteIndex = hexdec(substr($hash, 0, 2)) % count($palettes);
+        return $palettes[$paletteIndex];
     }
 
     /**
-     * @param array<HSLColor> $colors
-     * @return array<SVGCircle|SVGRect|SVGPolygon|SVGLine>
+     * @param array<string> $colors
      */
-    protected function generateShapes(Name $name, int $size, int $numShapes, array $colors): array
+    protected function createAdditionalShape(string $hash, int $baseIndex, int $size, array $colors, int $shapeNumber): SVGPolygon|SVGCircle|SVGRect
     {
-        $hash = $name->getHash();
-        $shapes = [];
-
-        // Use a grid-based approach to ensure better distribution
-        $gridSize = ceil(sqrt($numShapes));
-        $cellSize = $size / $gridSize;
-
-        for ($i = 0; $i < $numShapes; $i++) {
-            // Use hash to determine shape properties
-            $shapeType = $this->getShapeType($hash, $i);
-            $color = $colors[$i % count($colors)];
-            $opacity = (float) clamp(0.7 + ($i % 3) * 0.1, 0, 1);
-
-            // Calculate grid position to ensure distribution
-            $gridX = $i % $gridSize;
-            $gridY = floor($i / $gridSize);
-
-            // Add random offset within the grid cell for variety
-            $offsetX = $this->getValueFromHash($hash, $i * 5, 0, $cellSize * 0.8);
-            $offsetY = $this->getValueFromHash($hash, $i * 5 + 1, 0, $cellSize * 0.8);
-
-            $posX = $gridX * $cellSize + $offsetX;
-            $posY = $gridY * $cellSize + $offsetY;
-
-            // Much bigger size variation - from very small to very large
-            $shapeSize = $this->getValueFromHash($hash, $i * 5 + 2, $size * 0.05, $size * 0.45);
-
-            // Add rotation angle
-            $rotation = $this->getValueFromHash($hash, $i * 5 + 3, 0, 360);
-
-            $shape = match ($shapeType) {
-                'circle' => $this->createBauhausCircle($posX, $posY, $shapeSize / 2, $color, $opacity, $rotation),
-                'square' => $this->createBauhausSquare($posX, $posY, $shapeSize, $color, $opacity, $rotation),
-                'triangle' => $this->createBauhausTriangle($posX, $posY, $shapeSize, $color, $opacity, $rotation),
-                'rectangle' => $this->createBauhausRectangle($posX, $posY, $shapeSize, $shapeSize * 0.6, $color, $opacity, $rotation),
-                'line' => $this->createBauhausLine($posX, $posY, $shapeSize, $color, $opacity, $rotation),
-                default => $this->createBauhausCircle($posX, $posY, $shapeSize / 2, $color, $opacity, $rotation),
-            };
-
-            $shapes[] = $shape;
+        $shapeType = $this->getValueFromHash($hash, $baseIndex);
+        $colorIndex = (1 + $shapeNumber) % count($colors);
+        $color = $colors[$colorIndex];
+        if ($shapeType < 0.25) {
+            return $this->createTriangle($hash, $baseIndex, $size, $color);
+        }
+        if ($shapeType < 0.5) {
+            return $this->createHexagon($hash, $baseIndex, $size, $color);
         }
 
-        return $shapes;
-    }
-
-    protected function getShapeType(string $hash, int $index): string
-    {
-        $types = ['circle', 'square', 'triangle', 'rectangle', 'line'];
-        // Use a better mixing function to ensure varied shape selection
-        // Combine multiple hash portions to reduce repetition
-        $offset1 = ($index * 7) % (strlen($hash) - 2);
-        $offset2 = ($index * 13 + 5) % (strlen($hash) - 2);
-        $value = hexdec(substr($hash, $offset1, 2)) ^ hexdec(substr($hash, $offset2, 2));
-        return $types[$value % count($types)];
-    }
-
-    protected function getValueFromHash(string $hash, int $index, float $min, float $max): float
-    {
-        // Use prime number offsets to ensure better distribution across different indices
-        // XOR multiple hash portions to mix the bits better
-        $offset1 = ($index * 11) % (strlen($hash) - 4);
-        $offset2 = ($index * 17 + 7) % (strlen($hash) - 4);
-        $value1 = hexdec(substr($hash, $offset1, 4));
-        $value2 = hexdec(substr($hash, $offset2, 4));
-        $value = ($value1 ^ $value2) % 65536; // XOR and wrap to 16-bit range
-        $normalized = (float) clamp($value / 65535, 0, 1); // Normalize to 0-1
-        return $min + ($normalized * ($max - $min));
-    }
-
-    protected function createBauhausCircle(float $cx, float $cy, float $r, HSLColor $color, float $opacity, float $rotation): SVGCircle
-    {
-        $circle = new SVGCircle($cx, $cy, $r);
-        $circle->setStyle('fill', $color->toHex());
-        $circle->setStyle('fill-opacity', (string) $opacity);
-        $circle->setStyle('stroke', 'none');
-        if ($rotation != 0) {
-            $circle->setAttribute('transform', "rotate($rotation $cx $cy)");
+        if ($shapeType < 0.75) {
+            return $this->createSmallCircle($hash, $baseIndex, $size, $color);
         }
+
+        return $this->createSmallRectangle($hash, $baseIndex, $size, $color);
+    }
+
+    protected function createTriangle(string $hash, int $baseIndex, int $size, string $color): SVGPolygon
+    {
+        $triangleSize = $size * $this->getValueFromHash($hash, $baseIndex + 1, 0.2, 0.4);
+        $centerX = $size * $this->getValueFromHash($hash, $baseIndex + 2, 0.15, 0.85);
+        $centerY = $size * $this->getValueFromHash($hash, $baseIndex + 3, 0.15, 0.85);
+
+        $points = [
+            [$centerX, $centerY - $triangleSize / 2],
+            [$centerX - $triangleSize / 2, $centerY + $triangleSize / 2],
+            [$centerX + $triangleSize / 2, $centerY + $triangleSize / 2],
+        ];
+
+        $triangle = new SVGPolygon($points);
+        $triangle->setStyle('fill', $color);
+
+        $rotateAngle = $this->getValueFromHash($hash, $baseIndex + 4, 0, 360);
+        $triangle->setAttribute('transform', sprintf(
+            'rotate(%.0f %.1f %.1f)',
+            $rotateAngle,
+            $centerX,
+            $centerY
+        ));
+
+        return $triangle;
+    }
+
+    protected function createHexagon(string $hash, int $baseIndex, int $size, string $color): SVGPolygon
+    {
+        $hexSize = $size * $this->getValueFromHash($hash, $baseIndex + 1, 0.15, 0.3);
+        $centerX = $size * $this->getValueFromHash($hash, $baseIndex + 2, 0.15, 0.85);
+        $centerY = $size * $this->getValueFromHash($hash, $baseIndex + 3, 0.15, 0.85);
+
+        $points = [];
+        for ($i = 0; $i < 6; $i++) {
+            $angle = ($i * 60) * (M_PI / 180);
+            $points[] = [
+                $centerX + $hexSize * cos($angle),
+                $centerY + $hexSize * sin($angle),
+            ];
+        }
+
+        $hexagon = new SVGPolygon($points);
+        $hexagon->setStyle('fill', $color);
+
+        $rotateAngle = $this->getValueFromHash($hash, $baseIndex + 4, 0, 360);
+        $hexagon->setAttribute('transform', sprintf(
+            'rotate(%.0f %.1f %.1f)',
+            $rotateAngle,
+            $centerX,
+            $centerY
+        ));
+
+        return $hexagon;
+    }
+
+    protected function createSmallCircle(string $hash, int $baseIndex, int $size, string $color): SVGCircle
+    {
+        $radius = $size * $this->getValueFromHash($hash, $baseIndex + 1, 0.08, 0.18);
+        $centerX = $size * $this->getValueFromHash($hash, $baseIndex + 2, 0.15, 0.85);
+        $centerY = $size * $this->getValueFromHash($hash, $baseIndex + 3, 0.15, 0.85);
+
+        $circle = new SVGCircle($centerX, $centerY, $radius);
+        $circle->setStyle('fill', $color);
+
         return $circle;
     }
 
-    protected function createBauhausSquare(float $x, float $y, float $size, HSLColor $color, float $opacity, float $rotation): SVGRect
+    protected function createSmallRectangle(string $hash, int $baseIndex, int $size, string $color): SVGRect
     {
-        $rect = new SVGRect($x, $y, $size, $size);
-        $rect->setStyle('fill', $color->toHex());
-        $rect->setStyle('fill-opacity', (string) $opacity);
-        $rect->setStyle('stroke', 'none');
-        if ($rotation != 0) {
-            $centerX = $x + $size / 2;
-            $centerY = $y + $size / 2;
-            $rect->setAttribute('transform', "rotate($rotation $centerX $centerY)");
-        }
-        return $rect;
-    }
+        $width = $size * $this->getValueFromHash($hash, $baseIndex + 1, 0.15, 0.35);
+        $height = $size * $this->getValueFromHash($hash, $baseIndex + 5, 0.15, 0.35);
+        $x = $size * $this->getValueFromHash($hash, $baseIndex + 2, 0.1, 0.8);
+        $y = $size * $this->getValueFromHash($hash, $baseIndex + 3, 0.1, 0.8);
 
-    protected function createBauhausTriangle(float $x, float $y, float $size, HSLColor $color, float $opacity, float $rotation): SVGPolygon
-    {
-        $points = [
-            [$x + $size / 2, $y],                    // Top point
-            [$x, $y + $size],                         // Bottom left
-            [$x + $size, $y + $size],                // Bottom right
-        ];
-
-        $polygon = new SVGPolygon($points);
-        $polygon->setStyle('fill', $color->toHex());
-        $polygon->setStyle('fill-opacity', (string) $opacity);
-        $polygon->setStyle('stroke', 'none');
-        if ($rotation != 0) {
-            $centerX = $x + $size / 2;
-            $centerY = $y + $size * 2 / 3;
-            $polygon->setAttribute('transform', "rotate($rotation $centerX $centerY)");
-        }
-        return $polygon;
-    }
-
-    protected function createBauhausRectangle(float $x, float $y, float $width, float $height, HSLColor $color, float $opacity, float $rotation): SVGRect
-    {
         $rect = new SVGRect($x, $y, $width, $height);
-        $rect->setStyle('fill', $color->toHex());
-        $rect->setStyle('fill-opacity', (string) $opacity);
-        $rect->setStyle('stroke', 'none');
-        if ($rotation != 0) {
-            $centerX = $x + $width / 2;
-            $centerY = $y + $height / 2;
-            $rect->setAttribute('transform', "rotate($rotation $centerX $centerY)");
-        }
+        $rect->setStyle('fill', $color);
+
+        $rotateAngle = $this->getValueFromHash($hash, $baseIndex + 4, 0, 360);
+        $centerX = $x + $width / 2;
+        $centerY = $y + $height / 2;
+        $rect->setAttribute('transform', sprintf(
+            'rotate(%.0f %.1f %.1f)',
+            $rotateAngle,
+            $centerX,
+            $centerY
+        ));
+
         return $rect;
     }
 
-    protected function createBauhausLine(float $x, float $y, float $length, HSLColor $color, float $opacity, float $rotation): SVGLine
+    protected function getValueFromHash(string $hash, int $index, float $min = 0, float $max = 1): float
     {
-        // Lines span across the entire image diagonally
-        $lineLength = $length * 4; // Make lines much longer
-        $x2 = $x + $lineLength;
-        $y2 = $y;
-
-        $line = new SVGLine($x, $y, $x2, $y2);
-        $line->setStyle('stroke', $color->toHex());
-        $line->setStyle('stroke-opacity', (string) $opacity);
-        $line->setStyle('stroke-width', (string) ($length * 0.15));
-        $line->setStyle('stroke-linecap', 'round');
-        if ($rotation != 0) {
-            $centerX = $x;
-            $centerY = $y;
-            $line->setAttribute('transform', "rotate($rotation $centerX $centerY)");
-        }
-        return $line;
+        // Use prime number offsets to ensure better distribution across different indices
+        $offset = ($index * 2) % (strlen($hash) - 2);
+        $value = hexdec(substr($hash, $offset, 2));
+        $normalized = $value / 255.0;
+        return $min + ($normalized * ($max - $min));
     }
 }

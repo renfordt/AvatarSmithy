@@ -6,8 +6,6 @@ namespace Renfordt\AvatarSmithy\Engines;
 
 use Renfordt\AvatarSmithy\Support\Name;
 
-use function clamp;
-
 class GradientEngine extends AbstractEngine
 {
     /**
@@ -60,13 +58,11 @@ class GradientEngine extends AbstractEngine
             // Vary hue slightly
             $hsl->setHue((int) ($baseColor->getHue() + ($factor * 60 - 30)));
 
-            // Vary lightness
-            $lightness = (float) clamp(0.3 + ($factor * 0.5), 0, 1);
-            $hsl->setLightness($lightness);
+            // Vary lightness (0.3 to 0.8 range)
+            $hsl->setLightness(0.3 + ($factor * 0.5));
 
-            // Vary saturation
-            $saturation = (float) clamp(0.6 + ($factor * 0.3), 0, 1);
-            $hsl->setSaturation($saturation);
+            // Vary saturation (0.6 to 0.9 range)
+            $hsl->setSaturation(0.6 + ($factor * 0.3));
 
             $colors[] = [
                 'offset' => $factor * 100,
@@ -247,15 +243,15 @@ class GradientEngine extends AbstractEngine
         // Color 2: Shift hue by 60-120 degrees
         $color2 = clone $baseColor;
         $color2->setHue(($baseColor->getHue() + 90) % 360);
-        $color2->setLightness((float) clamp(0.5, 0, 1));
-        $color2->setSaturation((float) clamp(0.7, 0, 1));
+        $color2->setLightness(0.5);
+        $color2->setSaturation(0.7);
         $colors[] = $color2->toHex()->__toString();
 
         // Color 3: Shift hue in opposite direction
         $color3 = clone $baseColor;
         $color3->setHue(($baseColor->getHue() + 180) % 360);
-        $color3->setLightness((float) clamp(0.6, 0, 1));
-        $color3->setSaturation((float) clamp(0.75, 0, 1));
+        $color3->setLightness(0.6);
+        $color3->setSaturation(0.75);
         $colors[] = $color3->toHex()->__toString();
 
         return $colors;

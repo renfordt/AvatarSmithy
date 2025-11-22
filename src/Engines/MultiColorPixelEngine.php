@@ -8,8 +8,6 @@ use Renfordt\AvatarSmithy\Support\Name;
 use SVG\Nodes\Shapes\SVGRect;
 use SVG\SVG;
 
-use function clamp;
-
 class MultiColorPixelEngine extends AbstractEngine
 {
     /**
@@ -89,13 +87,11 @@ class MultiColorPixelEngine extends AbstractEngine
             $hueShift = ($factor * 60) - 30;
             $hsl->setHue((int) ($baseColor->getHue() + $hueShift));
 
-            // Vary lightness to create depth
-            $lightness = (float) clamp(0.35 + ($factor * 0.35), 0, 1);
-            $hsl->setLightness($lightness);
+            // Vary lightness to create depth (0.35 to 0.70 range)
+            $hsl->setLightness(0.35 + ($factor * 0.35));
 
-            // Keep saturation relatively consistent for harmony
-            $saturation = (float) clamp(0.6 + (sin($factor * pi()) * 0.2), 0, 1);
-            $hsl->setSaturation($saturation);
+            // Keep saturation relatively consistent for harmony (0.4 to 0.8 range)
+            $hsl->setSaturation(0.6 + (sin($factor * pi()) * 0.2));
 
             $colors[] = $hsl;
         }
