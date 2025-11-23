@@ -34,16 +34,14 @@ class AvatarBuilderTest extends TestCase
 {
     public function test_constructor_without_engine(): void
     {
-        $builder = new AvatarBuilder();
-
-        $this->assertInstanceOf(AvatarBuilder::class, $builder);
+        $this->expectNotToPerformAssertions();
+        new AvatarBuilder();
     }
 
     public function test_constructor_with_engine(): void
     {
-        $builder = new AvatarBuilder('initials');
-
-        $this->assertInstanceOf(AvatarBuilder::class, $builder);
+        $this->expectNotToPerformAssertions();
+        new AvatarBuilder('initials');
     }
 
     public function test_try_method_sets_primary_engine_when_none_exists(): void
@@ -317,18 +315,16 @@ class AvatarBuilderTest extends TestCase
 
     public function test_generate_with_engine_returns_generated_avatar(): void
     {
+        $this->expectNotToPerformAssertions();
         $builder = new AvatarBuilder('initials');
-        $result = $builder->name('John Doe')->generate();
-
-        $this->assertInstanceOf(GeneratedAvatar::class, $result);
+        $builder->name('John Doe')->generate();
     }
 
     public function test_generate_with_try_method(): void
     {
+        $this->expectNotToPerformAssertions();
         $builder = new AvatarBuilder();
-        $result = $builder->try('initials')->name('Jane Doe')->generate();
-
-        $this->assertInstanceOf(GeneratedAvatar::class, $result);
+        $builder->try('initials')->name('Jane Doe')->generate();
     }
 
     public function test_create_engine_throws_exception_for_unknown_engine(): void
@@ -341,57 +337,49 @@ class AvatarBuilderTest extends TestCase
 
     public function test_create_engine_for_bauhaus(): void
     {
-        $builder = new AvatarBuilder('bauhaus');
-
-        $this->assertInstanceOf(AvatarBuilder::class, $builder);
+        $this->expectNotToPerformAssertions();
+        new AvatarBuilder('bauhaus');
     }
 
     public function test_create_engine_for_dicebear(): void
     {
-        $builder = new AvatarBuilder('dicebear');
-
-        $this->assertInstanceOf(AvatarBuilder::class, $builder);
+        $this->expectNotToPerformAssertions();
+        new AvatarBuilder('dicebear');
     }
 
     public function test_create_engine_for_gradient(): void
     {
-        $builder = new AvatarBuilder('gradient');
-
-        $this->assertInstanceOf(AvatarBuilder::class, $builder);
+        $this->expectNotToPerformAssertions();
+        new AvatarBuilder('gradient');
     }
 
     public function test_create_engine_for_gravatar(): void
     {
-        $builder = new AvatarBuilder('gravatar');
-
-        $this->assertInstanceOf(AvatarBuilder::class, $builder);
+        $this->expectNotToPerformAssertions();
+        new AvatarBuilder('gravatar');
     }
 
     public function test_create_engine_for_initials(): void
     {
-        $builder = new AvatarBuilder('initials');
-
-        $this->assertInstanceOf(AvatarBuilder::class, $builder);
+        $this->expectNotToPerformAssertions();
+        new AvatarBuilder('initials');
     }
 
     public function test_create_engine_for_multicolor_pixel(): void
     {
-        $builder = new AvatarBuilder('multicolor-pixel');
-
-        $this->assertInstanceOf(AvatarBuilder::class, $builder);
+        $this->expectNotToPerformAssertions();
+        new AvatarBuilder('multicolor-pixel');
     }
 
     public function test_create_engine_for_pixel(): void
     {
-        $builder = new AvatarBuilder('pixel');
-
-        $this->assertInstanceOf(AvatarBuilder::class, $builder);
+        $this->expectNotToPerformAssertions();
+        new AvatarBuilder('pixel');
     }
 
     public function test_create_engine_case_insensitive(): void
     {
-        $builder = new AvatarBuilder('INITIALS');
-
-        $this->assertInstanceOf(AvatarBuilder::class, $builder);
+        $this->expectNotToPerformAssertions();
+        new AvatarBuilder('INITIALS');
     }
 }

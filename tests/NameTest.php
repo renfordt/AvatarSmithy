@@ -14,16 +14,14 @@ class NameTest extends TestCase
 {
     public function test_constructor(): void
     {
-        $name = new Name('John Doe');
-
-        $this->assertInstanceOf(Name::class, $name);
+        $this->expectNotToPerformAssertions();
+        new Name('John Doe');
     }
 
     public function test_make_factory_method(): void
     {
-        $name = Name::make('Jane Smith');
-
-        $this->assertInstanceOf(Name::class, $name);
+        $this->expectNotToPerformAssertions();
+        Name::make('Jane Smith');
     }
 
     public function test_get_name(): void
@@ -118,7 +116,7 @@ class NameTest extends TestCase
         $name = new Name('John Doe');
         $color = $name->getHexColor();
 
-        $this->assertInstanceOf(HexColor::class, $color);
+        $this->assertMatchesRegularExpression('/^#[0-9a-fA-F]{6}$/', $color->getHexStr());
     }
 
     public function test_get_hex_color_with_offset(): void
@@ -126,7 +124,7 @@ class NameTest extends TestCase
         $name = new Name('John Doe');
         $color = $name->getHexColor(5);
 
-        $this->assertInstanceOf(HexColor::class, $color);
+        $this->assertMatchesRegularExpression('/^#[0-9a-fA-F]{6}$/', $color->getHexStr());
     }
 
     public function test_get_hex_color_different_offsets_return_different_colors(): void

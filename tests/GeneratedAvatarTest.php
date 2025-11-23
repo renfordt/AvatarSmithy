@@ -13,16 +13,14 @@ class GeneratedAvatarTest extends TestCase
 {
     public function test_constructor_with_content_only(): void
     {
+        $this->expectNotToPerformAssertions();
         $avatar = new GeneratedAvatar('<svg></svg>');
-
-        $this->assertInstanceOf(GeneratedAvatar::class, $avatar);
     }
 
     public function test_constructor_with_content_and_type(): void
     {
+        $this->expectNotToPerformAssertions();
         $avatar = new GeneratedAvatar('binary-data', 'image/png');
-
-        $this->assertInstanceOf(GeneratedAvatar::class, $avatar);
     }
 
     public function test_to_string_returns_content(): void
@@ -142,7 +140,7 @@ class GeneratedAvatarTest extends TestCase
         $content = '<svg></svg>';
         $avatar = new GeneratedAvatar($content);
 
-        $this->assertInstanceOf(\Stringable::class, $avatar);
+        $this->assertSame($content, (string) $avatar);
     }
 
     public function test_is_data_uri_detection_with_data_prefix(): void

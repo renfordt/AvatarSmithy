@@ -15,16 +15,14 @@ class AvatarTest extends TestCase
 {
     public function test_engine_method_returns_avatar_builder(): void
     {
-        $builder = Avatar::engine('initials');
-
-        $this->assertInstanceOf(AvatarBuilder::class, $builder);
+        $this->expectNotToPerformAssertions();
+        Avatar::engine('initials');
     }
 
     public function test_for_method_returns_avatar_builder(): void
     {
-        $builder = Avatar::for(['name' => 'John Doe', 'email' => 'john@example.com']);
-
-        $this->assertInstanceOf(AvatarBuilder::class, $builder);
+        $this->expectNotToPerformAssertions();
+        Avatar::for(['name' => 'John Doe', 'email' => 'john@example.com']);
     }
 
     public function test_for_method_with_object_with_properties(): void
@@ -34,9 +32,8 @@ class AvatarTest extends TestCase
             public string $email = 'jane@example.com';
         };
 
-        $builder = Avatar::for($user);
-
-        $this->assertInstanceOf(AvatarBuilder::class, $builder);
+        $this->expectNotToPerformAssertions();
+        Avatar::for($user);
     }
 
     public function test_for_method_with_object_with_methods(): void
@@ -53,34 +50,30 @@ class AvatarTest extends TestCase
             }
         };
 
-        $builder = Avatar::for($user);
-
-        $this->assertInstanceOf(AvatarBuilder::class, $builder);
+        $this->expectNotToPerformAssertions();
+        Avatar::for($user);
     }
 
     public function test_for_method_with_array_containing_name(): void
     {
         $user = ['name' => 'Alice Cooper'];
 
-        $builder = Avatar::for($user);
-
-        $this->assertInstanceOf(AvatarBuilder::class, $builder);
+        $this->expectNotToPerformAssertions();
+        Avatar::for($user);
     }
 
     public function test_for_method_with_array_containing_email(): void
     {
         $user = ['email' => 'alice@example.com'];
 
-        $builder = Avatar::for($user);
-
-        $this->assertInstanceOf(AvatarBuilder::class, $builder);
+        $this->expectNotToPerformAssertions();
+        Avatar::for($user);
     }
 
     public function test_for_method_with_empty_array(): void
     {
-        $builder = Avatar::for([]);
-
-        $this->assertInstanceOf(AvatarBuilder::class, $builder);
+        $this->expectNotToPerformAssertions();
+        Avatar::for([]);
     }
 
     public function test_for_method_with_object_without_name_or_email(): void
@@ -89,9 +82,8 @@ class AvatarTest extends TestCase
             public string $id = '123';
         };
 
-        $builder = Avatar::for($user);
-
-        $this->assertInstanceOf(AvatarBuilder::class, $builder);
+        $this->expectNotToPerformAssertions();
+        Avatar::for($user);
     }
 
     public function test_for_method_with_non_string_properties(): void
@@ -101,18 +93,16 @@ class AvatarTest extends TestCase
             public int $email = 456;
         };
 
-        $builder = Avatar::for($user);
-
-        $this->assertInstanceOf(AvatarBuilder::class, $builder);
+        $this->expectNotToPerformAssertions();
+        Avatar::for($user);
     }
 
     public function test_for_method_with_non_string_array_values(): void
     {
         $user = ['name' => 123, 'email' => 456];
 
-        $builder = Avatar::for($user);
-
-        $this->assertInstanceOf(AvatarBuilder::class, $builder);
+        $this->expectNotToPerformAssertions();
+        Avatar::for($user);
     }
 
     public function test_for_method_with_object_with_non_string_method_returns(): void
@@ -129,8 +119,7 @@ class AvatarTest extends TestCase
             }
         };
 
-        $builder = Avatar::for($user);
-
-        $this->assertInstanceOf(AvatarBuilder::class, $builder);
+        $this->expectNotToPerformAssertions();
+        Avatar::for($user);
     }
 }
