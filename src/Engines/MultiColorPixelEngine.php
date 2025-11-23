@@ -47,7 +47,6 @@ class MultiColorPixelEngine extends AbstractEngine
                 }
             }
         } else {
-            // Use pattern from matrix
             foreach ($matrix as $y => $array) {
                 foreach ($array as $x => $value) {
                     if ($value) {
@@ -57,7 +56,6 @@ class MultiColorPixelEngine extends AbstractEngine
                             $pixelSize,
                             $pixelSize
                         );
-                        // Use hash to determine color for this pixel position
                         $color = $colors[$this->getColorIndexForPosition($x, $y, $nameObj->getHash(), count($colors))];
                         $rect->setStyle('fill', $color->toHex());
                         $doc->addChild($rect);
@@ -80,17 +78,13 @@ class MultiColorPixelEngine extends AbstractEngine
         for ($i = 0; $i < $numColors; $i++) {
             $hsl = clone $baseColor;
 
-            // Create harmonious color variations
             $factor = $i / max(1, $numColors - 1);
 
-            // Analogous color scheme - vary hue within 60 degrees
             $hueShift = ($factor * 60) - 30;
             $hsl->setHue((int) ($baseColor->getHue() + $hueShift));
 
-            // Vary lightness to create depth (0.35 to 0.70 range)
             $hsl->setLightness(0.35 + ($factor * 0.35));
 
-            // Keep saturation relatively consistent for harmony (0.4 to 0.8 range)
             $hsl->setSaturation(0.6 + (sin($factor * pi()) * 0.2));
 
             $colors[] = $hsl;
@@ -101,7 +95,6 @@ class MultiColorPixelEngine extends AbstractEngine
 
     protected function getColorIndexForPosition(int $x, int $y, string $hash, int $numColors): int
     {
-        // Use position and hash to deterministically select a color
         $position = $x * 100 + $y;
         $hashValue = hexdec(substr(md5($hash . $position), 0, 8));
         return $hashValue % $numColors;

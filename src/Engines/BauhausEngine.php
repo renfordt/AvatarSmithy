@@ -15,7 +15,7 @@ use SVG\SVG;
 class BauhausEngine extends AbstractEngine
 {
     /**
-     * @param array<string, mixed> $options
+     * @param  array<string, mixed>  $options
      */
     public function generate(string $seed, ?string $name, int $size, array $options): ?string
     {
@@ -23,7 +23,6 @@ class BauhausEngine extends AbstractEngine
         $hash = $nameObj->getHash();
         $numShapes = is_int($options['numShapes'] ?? null) ? $options['numShapes'] : 4;
 
-        // Generate Bauhaus color palette (5 colors from predefined schemes)
         $colors = $this->generateColorPalette($hash);
 
         $svg = new SVG($size, $size);
@@ -31,12 +30,10 @@ class BauhausEngine extends AbstractEngine
 
         $group = new SVGGroup();
 
-        // 1. Background rectangle (always present)
         $background = new SVGRect(0, 0, $size, $size);
         $background->setStyle('fill', $colors[0]);
         $group->addChild($background);
 
-        // 2. Large rotated rectangle with variable dimensions (always present)
         $rectWidthMultiplier = $this->getValueFromHash($hash, 0) < 0.3 ?
             $this->getValueFromHash($hash, 9, 0.6, 0.9) : 1.0;
         $rectWidth = $size * $rectWidthMultiplier;
@@ -68,7 +65,6 @@ class BauhausEngine extends AbstractEngine
         ));
         $group->addChild($rect);
 
-        // 3. Circle with variable diameter (always present)
         $circleRadius = $size * $this->getValueFromHash($hash, 13, 0.15, 0.25);
         $circle = new SVGCircle($size / 2, $size / 2, $circleRadius);
         $circle->setStyle('fill', $colors[2]);
@@ -81,7 +77,6 @@ class BauhausEngine extends AbstractEngine
         ));
         $group->addChild($circle);
 
-        // 4. Line across the middle (always present)
         $line = new SVGLine(0, $size / 2, $size, $size / 2);
         $line->setStyle('stroke', $colors[3]);
         $line->setStyle('stroke-width', (string) ($size * 0.025));
@@ -98,7 +93,6 @@ class BauhausEngine extends AbstractEngine
         ));
         $group->addChild($line);
 
-        // 5. Additional optional shapes (triangles, hexagons, extra circles/rectangles)
         if ($numShapes > 4) {
             $additionalShapes = $numShapes - 4;
             for ($i = 0; $i < $additionalShapes; $i++) {
@@ -118,7 +112,6 @@ class BauhausEngine extends AbstractEngine
      */
     protected function generateColorPalette(string $hash): array
     {
-        // Bauhaus-inspired color palettes (5 colors each)
         $palettes = [
             ['#ffe3b3', '#ff9a52', '#ff5252', '#c91e5a', '#3d2922'], // Warm oranges/reds
             ['#c91e5a', '#3d2922', '#ffe3b3', '#ff9a52', '#ff5252'], // Dark with warm accents
@@ -126,13 +119,13 @@ class BauhausEngine extends AbstractEngine
             ['#ff9a52', '#ff5252', '#c91e5a', '#3d2922', '#ffe3b3'], // Orange-dominant
         ];
 
-        // Select palette based on hash
         $paletteIndex = hexdec(substr($hash, 0, 2)) % count($palettes);
+
         return $palettes[$paletteIndex];
     }
 
     /**
-     * @param array<string> $colors
+     * @param  array<string>  $colors
      */
     protected function createAdditionalShape(string $hash, int $baseIndex, int $size, array $colors, int $shapeNumber): SVGPolygon|SVGCircle|SVGRect
     {
@@ -245,10 +238,10 @@ class BauhausEngine extends AbstractEngine
 
     protected function getValueFromHash(string $hash, int $index, float $min = 0, float $max = 1): float
     {
-        // Use prime number offsets to ensure better distribution across different indices
         $offset = ($index * 2) % (strlen($hash) - 2);
         $value = hexdec(substr($hash, $offset, 2));
         $normalized = $value / 255.0;
+
         return $min + ($normalized * ($max - $min));
     }
 }
