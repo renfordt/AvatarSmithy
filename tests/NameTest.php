@@ -7,7 +7,6 @@ namespace Renfordt\AvatarSmithy\Tests;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Renfordt\AvatarSmithy\Support\Name;
-use Renfordt\Colors\HexColor;
 
 #[CoversClass(Name::class)]
 class NameTest extends TestCase

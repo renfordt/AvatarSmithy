@@ -144,6 +144,7 @@ class TestableDiceBearEngine extends DiceBearEngine
     /**
      * @param array<string, mixed> $options
      */
+    #[\Override]
     public function generate(string $seed, ?string $name, int $size, array $options): ?string
     {
         $style = is_string($options['style'] ?? null) ? $options['style'] : 'avataaars';

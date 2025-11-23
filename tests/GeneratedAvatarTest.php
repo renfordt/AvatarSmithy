@@ -13,14 +13,18 @@ class GeneratedAvatarTest extends TestCase
 {
     public function test_constructor_with_content_only(): void
     {
-        $this->expectNotToPerformAssertions();
-        $avatar = new GeneratedAvatar('<svg></svg>');
+        $content = '<svg></svg>';
+        $avatar = new GeneratedAvatar($content);
+
+        $this->assertSame($content, $avatar->toString());
     }
 
     public function test_constructor_with_content_and_type(): void
     {
-        $this->expectNotToPerformAssertions();
-        $avatar = new GeneratedAvatar('binary-data', 'image/png');
+        $content = 'binary-data';
+        $avatar = new GeneratedAvatar($content, 'image/png');
+
+        $this->assertSame($content, $avatar->toString());
     }
 
     public function test_to_string_returns_content(): void
