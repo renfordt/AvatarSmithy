@@ -1,3 +1,5 @@
+![Preview Image](preview.png "Preview")
+
 # AvatarSmithy
 
 **Forge beautiful avatars with ease.**
