@@ -1,7 +1,22 @@
 {
   "name": "renfordt/avatar-smithy",
-  "description": "A modern PHP package that bundles multiple avatar generation engines. Forge beautiful avatars with ease. ",
+  "description": "A modern PHP package that bundles multiple avatar generation engines. Forge beautiful avatars with ease.",
   "type": "library",
+  "keywords": [
+    "avatar",
+    "gravatar",
+    "dicebear",
+    "initials",
+    "profile-picture",
+    "image-generation",
+    "svg",
+    "pixel-art",
+    "bauhaus",
+    "gradient",
+    "fallback",
+    "avatar-generator",
+    "php"
+  ],
   "require": {
     "php": "^8.4",
     "ext-gd": "*",
