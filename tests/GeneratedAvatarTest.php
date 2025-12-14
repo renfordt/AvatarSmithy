@@ -48,7 +48,8 @@ class GeneratedAvatarTest extends TestCase
         $content = '<svg xmlns="http://www.w3.org/2000/svg"></svg>';
         $avatar = new GeneratedAvatar($content);
 
-        $this->assertSame($content, $avatar->toHtml());
+        $expected = '<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="avatar-title"><title id="avatar-title">Avatar</title></svg>';
+        $this->assertSame($expected, $avatar->toHtml());
     }
 
     public function test_to_html_with_data_uri(): void
@@ -56,7 +57,7 @@ class GeneratedAvatarTest extends TestCase
         $content = 'data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=';
         $avatar = new GeneratedAvatar($content);
 
-        $this->assertSame('<img src="' . $content . '" />', $avatar->toHtml());
+        $this->assertSame('<img src="' . $content . '" alt="Avatar" />', $avatar->toHtml());
     }
 
     public function test_to_html_with_http_url(): void
@@ -64,7 +65,7 @@ class GeneratedAvatarTest extends TestCase
         $content = 'http://example.com/avatar.png';
         $avatar = new GeneratedAvatar($content);
 
-        $this->assertSame('<img src="' . $content . '" />', $avatar->toHtml());
+        $this->assertSame('<img src="' . $content . '" alt="Avatar" />', $avatar->toHtml());
     }
 
     public function test_to_html_with_https_url(): void
@@ -72,7 +73,7 @@ class GeneratedAvatarTest extends TestCase
         $content = 'https://example.com/avatar.png';
         $avatar = new GeneratedAvatar($content);
 
-        $this->assertSame('<img src="' . $content . '" />', $avatar->toHtml());
+        $this->assertSame('<img src="' . $content . '" alt="Avatar" />', $avatar->toHtml());
     }
 
     public function test_to_base64_with_svg_content(): void
@@ -152,7 +153,7 @@ class GeneratedAvatarTest extends TestCase
         $content = 'data:image/png;base64,iVBORw0KGgo=';
         $avatar = new GeneratedAvatar($content);
 
-        $this->assertSame('<img src="' . $content . '" />', $avatar->toHtml());
+        $this->assertSame('<img src="' . $content . '" alt="Avatar" />', $avatar->toHtml());
     }
 
     public function test_is_url_detection_with_http(): void

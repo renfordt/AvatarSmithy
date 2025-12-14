@@ -320,7 +320,7 @@ class AvatarBuilder
                 );
 
                 if ($result !== null) {
-                    return new GeneratedAvatar($result, $engine->getContentType());
+                    return new GeneratedAvatar($result, $engine->getContentType(), $this->name, $this->size);
                 }
 
                 // Engine returned null (fallback signal)

@@ -19,6 +19,9 @@
     "phpstan/extension-installer": "^1.4",
     "phpstan/phpstan-phpunit": "^2.0"
   },
+  "suggest": {
+    "imagick/imagick": "For better image encoding support"
+  },
   "license": "MIT",
   "autoload": {
     "psr-4": {
