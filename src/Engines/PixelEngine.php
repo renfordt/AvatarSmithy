@@ -54,7 +54,7 @@ class PixelEngine extends AbstractEngine
     {
         $color = $name->getHexColor();
         $hsl = $color->toHSL();
-        $hsl->setLightness($lightness);
+        $hsl->lightness = $lightness;
 
         return $hsl;
     }

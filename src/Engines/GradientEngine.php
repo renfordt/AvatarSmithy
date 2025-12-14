@@ -50,11 +50,11 @@ class GradientEngine extends AbstractEngine
             $hsl = clone $baseColor;
             $factor = $i / max(1, $numColors - 1);
 
-            $hsl->setHue((int) ($baseColor->getHue() + ($factor * 60 - 30)));
+            $hsl->hue = (int) ($baseColor->hue + ($factor * 60 - 30));
 
-            $hsl->setLightness(0.3 + ($factor * 0.5));
+            $hsl->lightness = 0.3 + ($factor * 0.5);
 
-            $hsl->setSaturation(0.6 + ($factor * 0.3));
+            $hsl->saturation = 0.6 + ($factor * 0.3);
 
             $colors[] = [
                 'offset' => $factor * 100,
@@ -218,15 +218,15 @@ class GradientEngine extends AbstractEngine
         $colors[] = $baseColor->toHex()->__toString();
 
         $color2 = clone $baseColor;
-        $color2->setHue(($baseColor->getHue() + 90) % 360);
-        $color2->setLightness(0.5);
-        $color2->setSaturation(0.7);
+        $color2->hue = ($baseColor->hue + 90) % 360;
+        $color2->lightness = 0.5;
+        $color2->saturation = 0.7;
         $colors[] = $color2->toHex()->__toString();
 
         $color3 = clone $baseColor;
-        $color3->setHue(($baseColor->getHue() + 180) % 360);
-        $color3->setLightness(0.6);
-        $color3->setSaturation(0.75);
+        $color3->hue = ($baseColor->hue + 180) % 360;
+        $color3->lightness = 0.6;
+        $color3->saturation = 0.75;
         $colors[] = $color3->toHex()->__toString();
 
         return $colors;

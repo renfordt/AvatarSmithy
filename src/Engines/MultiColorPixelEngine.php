@@ -81,11 +81,11 @@ class MultiColorPixelEngine extends AbstractEngine
             $factor = $i / max(1, $numColors - 1);
 
             $hueShift = ($factor * 60) - 30;
-            $hsl->setHue((int) ($baseColor->getHue() + $hueShift));
+            $hsl->hue = (int) ($baseColor->hue + $hueShift);
 
-            $hsl->setLightness(0.35 + ($factor * 0.35));
+            $hsl->lightness = 0.35 + ($factor * 0.35);
 
-            $hsl->setSaturation(0.6 + (sin($factor * pi()) * 0.2));
+            $hsl->saturation = 0.6 + (sin($factor * pi()) * 0.2);
 
             $colors[] = $hsl;
         }

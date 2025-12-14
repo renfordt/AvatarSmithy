@@ -6,8 +6,9 @@
     "php": "^8.4",
     "ext-gd": "*",
     "meyfa/php-svg": "^0.16.0",
-    "renfordt/clamp": "^v1.0.1",
-    "renfordt/colors": "^v1.0.3"
+    "psr/log": "^3.0",
+    "renfordt/clamp": "^1.0",
+    "renfordt/colors": "^2.0"
   },
   "require-dev": {
     "phpstan/phpstan": "^2.1",

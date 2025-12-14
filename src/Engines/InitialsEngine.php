@@ -62,10 +62,10 @@ class InitialsEngine extends AbstractEngine
         $color = $name->getHexColor();
 
         $dark = $color->toHSL();
-        $dark->setLightness($foregroundLightness);
+        $dark->lightness = $foregroundLightness;
 
         $light = $color->toHSL();
-        $light->setLightness($backgroundLightness);
+        $light->lightness = $backgroundLightness;
 
         return [$dark, $light];
     }
