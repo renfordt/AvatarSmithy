@@ -25,6 +25,8 @@ class PixelEngine extends AbstractEngine
         $pixels = is_int($options['pixels'] ?? null) ? $options['pixels'] : 5;
         $symmetry = is_bool($options['symmetry'] ?? null) ? $options['symmetry'] : true;
         $foregroundLightness = is_float($options['foregroundLightness'] ?? null) ? (float) clamp($options['foregroundLightness'], 0, 1) : 0.5;
+        $background = is_bool($options['background'] ?? null) ? $options['background'] : true;
+        $backgroundLightness = is_float($options['backgroundLightness'] ?? null) ? (float) clamp($options['backgroundLightness'], 0, 1) : 0.9;
 
         $color = $this->getColor($nameObj, $foregroundLightness);
         $matrix = $symmetry ? $this->generateSymmetricMatrix($nameObj, $pixels) : $this->generateMatrix($nameObj, $pixels);
@@ -33,6 +35,14 @@ class PixelEngine extends AbstractEngine
         $doc = $svg->getDocument();
 
         $pixelSize = $size / $pixels;
+
+        // Draw background if enabled
+        if ($background) {
+            $backgroundColor = $this->getColor($nameObj, $backgroundLightness);
+            $backgroundRect = new SVGRect(0, 0, $size, $size);
+            $backgroundRect->setStyle('fill', $backgroundColor->toHex());
+            $doc->addChild($backgroundRect);
+        }
 
         foreach ($matrix as $y => $array) {
             foreach ($array as $x => $value) {

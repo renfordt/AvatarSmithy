@@ -155,4 +155,51 @@ class PixelEngineTest extends TestCase
         $this->assertNotNull($result);
         $this->assertStringContainsString('<svg', $result);
     }
+
+    public function test_generate_with_background_enabled_by_default(): void
+    {
+        $result = $this->engine->generate('test-seed', null, 200, []);
+
+        $this->assertNotNull($result);
+        $this->assertStringContainsString('<svg', $result);
+        // Should contain a background rect at position 0,0 with full size
+        $this->assertStringContainsString('<rect', $result);
+        $this->assertStringContainsString('x="0"', $result);
+        $this->assertStringContainsString('y="0"', $result);
+    }
+
+    public function test_generate_with_background_disabled(): void
+    {
+        $resultWithBackground = $this->engine->generate('test-seed', null, 200, []);
+        $resultWithoutBackground = $this->engine->generate('test-seed', null, 200, [
+            'background' => false,
+        ]);
+
+        $this->assertNotNull($resultWithoutBackground);
+        $this->assertNotSame($resultWithBackground, $resultWithoutBackground);
+        // Without background, should have fewer rectangles in the SVG
+        $this->assertStringContainsString('<svg', $resultWithoutBackground);
+    }
+
+    public function test_generate_with_custom_background_lightness(): void
+    {
+        $result = $this->engine->generate('test-seed', null, 200, [
+            'backgroundLightness' => 0.95,
+        ]);
+
+        $this->assertNotNull($result);
+        $this->assertStringContainsString('<svg', $result);
+        $this->assertStringContainsString('<rect', $result);
+    }
+
+    public function test_generate_with_background_and_foreground_lightness(): void
+    {
+        $result = $this->engine->generate('test-seed', null, 200, [
+            'foregroundLightness' => 0.3,
+            'backgroundLightness' => 0.95,
+        ]);
+
+        $this->assertNotNull($result);
+        $this->assertStringContainsString('<svg', $result);
+    }
 }
