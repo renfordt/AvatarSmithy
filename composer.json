@@ -20,7 +20,12 @@
     "phpstan/phpstan-phpunit": "^2.0"
   },
   "suggest": {
-    "imagick/imagick": "For better image encoding support"
+    "imagick/imagick": "For better image encoding support",
+    "psr/http-message": "For PSR-7 HTTP message interfaces (required for toPsr7Response())",
+    "psr/http-factory": "For PSR-17 HTTP factory interfaces (required for toPsr7Response())",
+    "nyholm/psr7": "Recommended PSR-7/PSR-17 implementation (nyholm/psr7 provides both)",
+    "guzzlehttp/psr7": "Alternative PSR-7/PSR-17 implementation",
+    "laminas/laminas-diactoros": "Alternative PSR-7/PSR-17 implementation"
   },
   "license": "MIT",
   "autoload": {

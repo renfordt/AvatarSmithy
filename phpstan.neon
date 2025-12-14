@@ -5,3 +5,19 @@ parameters:
         - tests
 
     reportUnmatchedIgnoredErrors: true
+
+    ignoreErrors:
+        # PSR-7/PSR-17 interfaces are optional dependencies
+        - message: '#Psr\\Http\\Message\\(ResponseInterface|ResponseFactoryInterface|StreamFactoryInterface)#'
+          path: src/GeneratedAvatar.php
+        # Laminas classes are optional PSR-17 implementations
+        - message: '#Laminas\\Diactoros#'
+          path: src/GeneratedAvatar.php
+        # Method withBody/withHeader on mixed (caused by PSR-7 response being mixed when interfaces not available)
+        - message: '#Cannot call method (withBody|withHeader)\(\) on mixed#'
+          path: src/GeneratedAvatar.php
+        # Test-specific ignores for xdebug_get_headers() which returns mixed
+        - message: '#^Cannot cast mixed to string#'
+          path: tests/GeneratedAvatarTest.php
+        - message: '#^Parameter \#2 \$haystack of method PHPUnit\\Framework\\Assert::assertStringContainsString\(\) expects string, mixed given#'
+          path: tests/GeneratedAvatarTest.php

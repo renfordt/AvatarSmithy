@@ -48,7 +48,8 @@ class GeneratedAvatarTest extends TestCase
         $content = '<svg xmlns="http://www.w3.org/2000/svg"></svg>';
         $avatar = new GeneratedAvatar($content);
 
-        $expected = '<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="avatar-title"><title id="avatar-title">Avatar</title></svg>';
+        // SVG content is now converted to img tag with data URI for better cross-browser compatibility
+        $expected = '<img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjwvc3ZnPg==" alt="Avatar" />';
         $this->assertSame($expected, $avatar->toHtml());
     }
 
@@ -195,5 +196,155 @@ class GeneratedAvatarTest extends TestCase
         $base64 = $avatar->toBase64();
 
         $this->assertStringContainsString('image/jpeg', $base64);
+    }
+
+    public function test_save_creates_file(): void
+    {
+        $content = '<svg></svg>';
+        $avatar = new GeneratedAvatar($content);
+        $tempFile = sys_get_temp_dir() . '/avatar_test_' . uniqid() . '.svg';
+
+        try {
+            $result = $avatar->save($tempFile);
+
+            $this->assertTrue($result);
+            $this->assertFileExists($tempFile);
+            $this->assertSame($content, file_get_contents($tempFile));
+        } finally {
+            if (file_exists($tempFile)) {
+                unlink($tempFile);
+            }
+        }
+    }
+
+    public function test_save_creates_directory_if_not_exists(): void
+    {
+        $content = '<svg></svg>';
+        $avatar = new GeneratedAvatar($content);
+        $tempDir = sys_get_temp_dir() . '/avatar_test_dir_' . uniqid();
+        $tempFile = $tempDir . '/avatar.svg';
+
+        try {
+            $result = $avatar->save($tempFile);
+
+            $this->assertTrue($result);
+            $this->assertFileExists($tempFile);
+            $this->assertSame($content, file_get_contents($tempFile));
+        } finally {
+            if (file_exists($tempFile)) {
+                unlink($tempFile);
+            }
+            if (is_dir($tempDir)) {
+                rmdir($tempDir);
+            }
+        }
+    }
+
+    public function test_save_returns_false_on_invalid_path(): void
+    {
+        $content = '<svg></svg>';
+        $avatar = new GeneratedAvatar($content);
+
+        // Try to save to an invalid path (e.g., root directory on Unix-like systems)
+        $result = @$avatar->save('/root/invalid/path/avatar.svg');
+
+        $this->assertFalse($result);
+    }
+
+    public function test_download_without_illuminate_response(): void
+    {
+        $content = '<svg></svg>';
+        $avatar = new GeneratedAvatar($content, 'image/svg+xml');
+
+        ob_start();
+        $result = $avatar->download('avatar.svg');
+        $output = ob_get_clean();
+
+        $this->assertNull($result);
+        $this->assertSame($content, $output);
+    }
+
+    public function test_download_escapes_filename(): void
+    {
+        $content = '<svg></svg>';
+        $avatar = new GeneratedAvatar($content, 'image/svg+xml');
+
+        ob_start();
+        $avatar->download('avatar"test.svg');
+        ob_get_clean();
+
+        $headers = xdebug_get_headers();
+        $dispositionHeader = array_filter($headers, fn ($h): bool => str_starts_with((string) $h, 'Content-Disposition:'));
+
+        if ($dispositionHeader !== []) {
+            $this->assertStringContainsString('avatar\"test.svg', reset($dispositionHeader));
+        }
+    }
+
+    public function test_stream_outputs_content_in_chunks(): void
+    {
+        $content = str_repeat('A', 10000); // 10KB content
+        $avatar = new GeneratedAvatar($content, 'image/svg+xml');
+
+        ob_start();
+        $avatar->stream(1024, false); // Stream in 1KB chunks without headers
+        $output = ob_get_clean();
+
+        $this->assertSame($content, $output);
+    }
+
+    public function test_stream_with_headers(): void
+    {
+        $content = '<svg></svg>';
+        $avatar = new GeneratedAvatar($content, 'image/svg+xml');
+
+        ob_start();
+        $avatar->stream(8192, true);
+        $output = ob_get_clean();
+
+        $this->assertSame($content, $output);
+    }
+
+    public function test_toPsr7Response_throws_exception_when_psr7_not_available(): void
+    {
+        $content = '<svg></svg>';
+        $avatar = new GeneratedAvatar($content);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('PSR-7 support requires');
+
+        $avatar->toPsr7Response();
+    }
+
+    public function test_alt_text_sets_custom_alt(): void
+    {
+        $content = '<svg xmlns="http://www.w3.org/2000/svg"></svg>';
+        $avatar = new GeneratedAvatar($content, 'image/svg+xml', 'John Doe');
+
+        $avatar->alt('Custom alt text');
+        $html = $avatar->toHtml();
+
+        $this->assertStringContainsString('Custom alt text', $html);
+    }
+
+    public function test_alt_text_uses_name_when_not_set(): void
+    {
+        $content = '<svg xmlns="http://www.w3.org/2000/svg"></svg>';
+        $avatar = new GeneratedAvatar($content, 'image/svg+xml', 'John Doe');
+
+        $html = $avatar->toHtml();
+
+        $this->assertStringContainsString('Avatar for John Doe', $html);
+    }
+
+    public function test_accessible_html_with_data_uri(): void
+    {
+        $content = 'data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=';
+        $avatar = new GeneratedAvatar($content, 'image/svg+xml', 'John Doe');
+
+        $html = $avatar->accessibleHtml();
+
+        $this->assertStringContainsString('role="img"', $html);
+        $this->assertStringContainsString('aria-label="Avatar for John Doe"', $html);
     }
 }
