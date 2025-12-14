@@ -245,10 +245,22 @@ class GeneratedAvatarTest extends TestCase
         $content = '<svg></svg>';
         $avatar = new GeneratedAvatar($content);
 
-        // Try to save to an invalid path (e.g., root directory on Unix-like systems)
-        $result = @$avatar->save('/root/invalid/path/avatar.svg');
+        // Create a temporary file, then try to save to a path that treats this file as a directory
+        // This should fail on all platforms (Windows, Linux, macOS)
+        $tempFile = sys_get_temp_dir() . '/avatar_test_file_' . uniqid() . '.txt';
+        file_put_contents($tempFile, 'test');
 
-        $this->assertFalse($result);
+        try {
+            // Try to save to a path where parent is a file, not a directory
+            // This will fail because you can't create a directory inside a file
+            $result = @$avatar->save($tempFile . '/avatar.svg');
+
+            $this->assertFalse($result);
+        } finally {
+            if (file_exists($tempFile)) {
+                unlink($tempFile);
+            }
+        }
     }
 
     public function test_download_without_illuminate_response(): void
